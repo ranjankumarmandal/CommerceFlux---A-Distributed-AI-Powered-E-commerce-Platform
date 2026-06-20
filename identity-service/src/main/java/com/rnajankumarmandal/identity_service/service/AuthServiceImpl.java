@@ -1,11 +1,9 @@
 package com.rnajankumarmandal.identity_service.service;
 
-import com.rnajankumarmandal.identity_service.dto.RegisterRequest;
-import com.rnajankumarmandal.identity_service.dto.RegisterResponse;
-import com.rnajankumarmandal.identity_service.entity.Role;
+import com.rnajankumarmandal.identity_service.dto.*;
 import com.rnajankumarmandal.identity_service.entity.User;
-import com.rnajankumarmandal.identity_service.entity.UserStatus;
 import com.rnajankumarmandal.identity_service.exception.DuplicateResourceException;
+import com.rnajankumarmandal.identity_service.exception.UnauthorizedException;
 import com.rnajankumarmandal.identity_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,37 +16,44 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserRepository repository;
+    private final PasswordEncoder encoder;
+    private final JwtService jwtService;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
 
-        if (userRepository.existsByEmail(request.email())) {
-            throw new DuplicateResourceException(
-                    "Email already registered"
-            );
+        if (repository.existsByEmail(request.email())) {
+            throw new DuplicateResourceException("Email already exists");
         }
 
         User user = User.builder()
                 .id(UUID.randomUUID())
                 .email(request.email())
-                .password(
-                        passwordEncoder.encode(
-                                request.password()
-                        )
-                )
-                .role(Role.ROLE_CUSTOMER)
-                .status(UserStatus.ACTIVE)
+                .password(encoder.encode(request.password()))
+                .role(User.Role.ROLE_CUSTOMER)
+                .status(User.UserStatus.ACTIVE)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
 
-        userRepository.save(user);
+        repository.save(user);
 
-        return new RegisterResponse(
-                user.getId(),
-                user.getEmail()
-        );
+        return new RegisterResponse(user.getId(), user.getEmail());
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+
+        User user = repository.findByEmail(request.email())
+                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
+
+        if (!encoder.matches(request.password(), user.getPassword())) {
+            throw new UnauthorizedException("Invalid credentials");
+        }
+
+        String token = jwtService.generateToken(user.getEmail());
+
+        return new LoginResponse(token);
     }
 }

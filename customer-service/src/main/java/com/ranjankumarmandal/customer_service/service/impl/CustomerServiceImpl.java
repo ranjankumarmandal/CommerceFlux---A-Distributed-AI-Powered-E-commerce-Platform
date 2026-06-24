@@ -42,7 +42,18 @@ public class CustomerServiceImpl implements CustomerService {
                 .status(CustomerStatus.ACTIVE)
                 .build();
 
-        return mapper.toResponse(repository.save(customer));
+        Customer saved = repository.save(customer);
+
+        // EVENT PUBLISHING (IMPORTANT)
+        eventProducer.publishCustomerCreated(
+                new CustomerCreatedEvent(
+                        saved.getId(),
+                        saved.getUserId(),
+                        saved.getEmail()
+                )
+        );
+
+        return mapper.toResponse(saved);
     }
 
     @Override

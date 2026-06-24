@@ -23,6 +23,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository repository;
     private final CustomerMapper mapper;
+    private final CustomerRepository repository;
+    private final CustomerMapper mapper;
+    private final CustomerEventProducer eventProducer;
 
     @Override
     public CustomerResponse create(CreateCustomerRequest request) {

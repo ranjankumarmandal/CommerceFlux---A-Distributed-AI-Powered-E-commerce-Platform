@@ -1,3 +1,33 @@
 spring:
+
   application:
     name: seller-service
+
+  profiles:
+    active: dev
+
+server:
+  port: 8083
+
+management:
+
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  jwt:
+    secret: change-me

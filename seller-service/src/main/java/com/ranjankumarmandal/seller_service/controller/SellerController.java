@@ -59,35 +59,3 @@ public class SellerController {
         return ResponseEntity.noContent().build();
     }
 }
-
-I am building a project for my resume targetting positions like SSE and Lead Engineer at FAANG companies with techstack - java, springboot, spring security, webflux,spring batch, postgres, radis, kafka, apache spark, python, pytorch, higging face, transformer models, tensorflow, bocker, kubernetes. Let's build step by step each servies using spring starter and other -
-
-CommerceFlux/
-
-identity-service/ ==> completed
-customer-service/ ==> completed
-seller-service/ ==> completed
-
-catalog-service/
-inventory-service/
-pricing-service/
-
-cart-service/
-wishlist-service/
-
-order-service/
-payment-service/
-shipping-service/
-
-notification-service/
-review-service/
-
-search-service/
-analytics-service/
-
-api-gateway/
-
-ai-recommendation-service/
-ai-demand-forecast-service/
-ai-dynamic-pricing-service/
-ai-fraud-detection-service/

@@ -1,3 +1,7 @@
+package com.ranjankumarmandal.seller_service.dto.request;
+
+import lombok.Data;
+
 @Data
 public class CreateWarehouseRequest {
 

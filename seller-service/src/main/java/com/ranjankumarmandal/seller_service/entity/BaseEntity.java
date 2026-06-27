@@ -1,35 +1,51 @@
 package com.ranjankumarmandal.seller_service.entity;
 
+import com.ranjankumarmandal.seller_service.enums.SellerStatus;
+import com.ranjankumarmandal.seller_service.enums.VerificationStatus;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.List;
 
 @Getter
 @Setter
-@MappedSuperclass
-public abstract class BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@Table(name = "sellers")
+public class Seller extends BaseEntity {
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private String fullName;
 
-    @PrePersist
-    public void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = createdAt;
-    }
+    @Column(nullable = false, unique = true)
+    private String email;
 
-    @PreUpdate
-    public void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    @Column(nullable = false, unique = true)
+    private String phone;
+
+    private String businessName;
+
+    private String gstNumber;
+
+    private String panNumber;
+
+    @Enumerated(EnumType.STRING)
+    private SellerStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private VerificationStatus verificationStatus;
+
+    @OneToOne(mappedBy = "seller", cascade = CascadeType.ALL)
+    private Store store;
+
+    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
+    private List<Warehouse> warehouses;
+
+    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
+    private List<SellerDocument> documents;
+
+    @OneToOne(mappedBy = "seller", cascade = CascadeType.ALL)
+    private SellerBank bank;
 }

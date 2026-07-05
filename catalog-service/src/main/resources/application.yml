@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: catalog-service
+
+  profiles:
+    active: dev
+
+server:
+  port: 8084
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    root: INFO

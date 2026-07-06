@@ -8,6 +8,11 @@ import com.ranjankumarmandal.catalog_service.exception.ResourceNotFoundException
 import com.ranjankumarmandal.catalog_service.repository.*;
 import com.ranjankumarmandal.catalog_service.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,8 +24,10 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     @Override
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse create(ProductRequest request) {
 
         Category category = categoryRepository.findById(request.getCategoryId())
@@ -39,10 +46,14 @@ public class ProductServiceImpl implements ProductService {
 
         product = productRepository.save(product);
 
-        return map(product);
+        ProductResponse response = map(product);
+        kafkaProducerService.sendProductCreatedEvent(product.getId(), product.getName(), response);
+
+        return response;
     }
 
     @Override
+    @Cacheable(value = "products", key = "#id")
     public ProductResponse getById(Long id) {
 
         Product product = productRepository.findById(id)
@@ -59,6 +70,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Page<ProductResponse> getAll(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(this::map);
+    }
+
+    @Override
+    @CachePut(value = "products", key = "#id")
     public ProductResponse update(Long id, ProductRequest request) {
 
         Product product = productRepository.findById(id)
@@ -67,16 +85,22 @@ public class ProductServiceImpl implements ProductService {
         product.setName(request.getName());
         product.setDescription(request.getDescription());
 
-        return map(productRepository.save(product));
+        ProductResponse response = map(productRepository.save(product));
+        kafkaProducerService.sendProductUpdatedEvent(product.getId(), product.getName(), response);
+
+        return response;
     }
 
     @Override
+    @CacheEvict(value = "products", key = "#id")
     public void delete(Long id) {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
+        String productName = product.getName();
         productRepository.delete(product);
+        kafkaProducerService.sendProductDeletedEvent(id, productName);
     }
 
     private ProductResponse map(Product product) {

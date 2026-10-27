@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+
+  ai-recommendation-service:
+    build: .
+    container_name: ai-recommendation-service
+    ports:
+      - "8096:8096"
+    networks:
+      - commerce-network
+
+networks:
+  commerce-network:

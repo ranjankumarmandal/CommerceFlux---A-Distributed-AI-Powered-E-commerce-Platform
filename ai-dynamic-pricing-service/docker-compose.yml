@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+
+  ai-dynamic-pricing-service:
+    build: .
+    container_name: ai-dynamic-pricing-service
+    ports:
+      - "8098:8098"
+    networks:
+      - commerce-network
+
+networks:
+  commerce-network:

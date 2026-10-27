@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+
+  ai-demand-forecast-service:
+    build: .
+    container_name: ai-demand-forecast-service
+    ports:
+      - "8097:8097"
+    networks:
+      - commerce-network
+
+networks:
+  commerce-network:

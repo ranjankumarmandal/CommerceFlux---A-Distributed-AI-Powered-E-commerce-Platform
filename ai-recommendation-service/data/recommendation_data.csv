@@ -1,0 +1,11 @@
+customer_id,product_category,purchase_frequency,avg_order_value,days_since_last_purchase,product_id
+1,Electronics,5,150.00,7,1001
+1,Electronics,5,150.00,7,1002
+2,Clothing,3,75.00,15,2001
+2,Clothing,3,75.00,15,2002
+3,Home,4,200.00,10,3001
+3,Home,4,200.00,10,3002
+4,Electronics,6,180.00,3,1003
+4,Clothing,2,50.00,20,2003
+5,Home,5,220.00,5,3003
+5,Electronics,4,120.00,12,1004

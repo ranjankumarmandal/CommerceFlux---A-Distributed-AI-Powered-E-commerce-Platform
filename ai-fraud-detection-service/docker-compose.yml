@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+
+  ai-fraud-detection-service:
+    build: .
+    container_name: ai-fraud-detection-service
+    ports:
+      - "8099:8099"
+    networks:
+      - commerce-network
+
+networks:
+  commerce-network:

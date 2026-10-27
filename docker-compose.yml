@@ -1,0 +1,445 @@
+version: "3.9"
+
+services:
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - commerce-network
+    depends_on:
+      - catalog-service
+      - inventory-service
+      - pricing-service
+      - cart-service
+      - wishlist-service
+      - order-service
+      - payment-service
+      - shipping-service
+      - notification-service
+      - review-service
+      - search-service
+      - analytics-service
+
+  # Core Services
+  catalog-service:
+    build: ./catalog-service
+    container_name: catalog-service
+    ports:
+      - "8084:8084"
+    networks:
+      - commerce-network
+    depends_on:
+      - catalog-postgres
+      - catalog-redis
+
+  inventory-service:
+    build: ./inventory-service
+    container_name: inventory-service
+    ports:
+      - "8085:8085"
+    networks:
+      - commerce-network
+    depends_on:
+      - inventory-postgres
+      - inventory-redis
+      - zookeeper
+      - kafka
+
+  pricing-service:
+    build: ./pricing-service
+    container_name: pricing-service
+    ports:
+      - "8086:8086"
+    networks:
+      - commerce-network
+    depends_on:
+      - pricing-postgres
+      - pricing-redis
+
+  cart-service:
+    build: ./cart-service
+    container_name: cart-service
+    ports:
+      - "8087:8087"
+    networks:
+      - commerce-network
+    depends_on:
+      - cart-redis
+
+  wishlist-service:
+    build: ./wishlist-service
+    container_name: wishlist-service
+    ports:
+      - "8088:8088"
+    networks:
+      - commerce-network
+    depends_on:
+      - wishlist-postgres
+      - wishlist-redis
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    ports:
+      - "8089:8089"
+    networks:
+      - commerce-network
+    depends_on:
+      - order-postgres
+      - order-redis
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "8090:8090"
+    networks:
+      - commerce-network
+    depends_on:
+      - payment-postgres
+      - payment-redis
+
+  shipping-service:
+    build: ./shipping-service
+    container_name: shipping-service
+    ports:
+      - "8091:8091"
+    networks:
+      - commerce-network
+    depends_on:
+      - shipping-postgres
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8092:8092"
+    networks:
+      - commerce-network
+    depends_on:
+      - notification-postgres
+
+  review-service:
+    build: ./review-service
+    container_name: review-service
+    ports:
+      - "8093:8093"
+    networks:
+      - commerce-network
+    depends_on:
+      - review-postgres
+
+  search-service:
+    build: ./search-service
+    container_name: search-service
+    ports:
+      - "8094:8094"
+    networks:
+      - commerce-network
+    depends_on:
+      - elasticsearch
+
+  analytics-service:
+    build: ./analytics-service
+    container_name: analytics-service
+    ports:
+      - "8095:8095"
+    networks:
+      - commerce-network
+
+  # AI Services
+  ai-recommendation-service:
+    build: ./ai-recommendation-service
+    container_name: ai-recommendation-service
+    ports:
+      - "8096:8096"
+    networks:
+      - commerce-network
+
+  ai-demand-forecast-service:
+    build: ./ai-demand-forecast-service
+    container_name: ai-demand-forecast-service
+    ports:
+      - "8097:8097"
+    networks:
+      - commerce-network
+
+  ai-dynamic-pricing-service:
+    build: ./ai-dynamic-pricing-service
+    container_name: ai-dynamic-pricing-service
+    ports:
+      - "8098:8098"
+    networks:
+      - commerce-network
+
+  ai-fraud-detection-service:
+    build: ./ai-fraud-detection-service
+    container_name: ai-fraud-detection-service
+    ports:
+      - "8099:8099"
+    networks:
+      - commerce-network
+
+  # Infrastructure
+  catalog-postgres:
+    image: postgres:17
+    container_name: catalog-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: catalog_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - catalog-postgres-data:/var/lib/postgresql/data
+    networks:
+      - commerce-network
+
+  catalog-redis:
+    image: redis:7
+    container_name: catalog-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - commerce-network
+
+  inventory-postgres:
+    image: postgres:17
+    container_name: inventory-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: inventory_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - inventory-postgres-data:/var/lib/postgresql/data
+    networks:
+      - commerce-network
+
+  inventory-redis:
+    image: redis:7
+    container_name: inventory-redis
+    restart: always
+    ports:
+      - "6380:6379"
+    networks:
+      - commerce-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - commerce-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - commerce-network
+
+  pricing-postgres:
+    image: postgres:17
+    container_name: pricing-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: pricing_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - pricing-postgres-data:/var/lib/postgresql/data
+    networks:
+      - commerce-network
+
+  pricing-redis:
+    image: redis:7
+    container_name: pricing-redis
+    restart: always
+    ports:
+      - "6381:6379"
+    networks:
+      - commerce-network
+
+  cart-redis:
+    image: redis:7
+    container_name: cart-redis
+    restart: always
+    ports:
+      - "6382:6379"
+    networks:
+      - commerce-network
+
+  wishlist-postgres:
+    image: postgres:17
+    container_name: wishlist-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: wishlist_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - wishlist-postgres-data:/var/lib/postgresql/data
+    networks:
+      - commerce-network
+
+  wishlist-redis:
+    image: redis:7
+    container_name: wishlist-redis
+    restart: always
+    ports:
+      - "6383:6379"
+    networks:
+      - commerce-network
+
+  order-postgres:
+    image: postgres:17
+    container_name: order-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - order-postgres-data:/var/lib/postgresql/data
+    networks:
+      - commerce-network
+
+  order-redis:
+    image: redis:7
+    container_name: order-redis
+    restart: always
+    ports:
+      - "6384:6379"
+    networks:
+      - commerce-network
+
+  payment-postgres:
+    image: postgres:17
+    container_name: payment-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5437:5432"
+    volumes:
+      - payment-postgres-data:/var/lib/postgresql/data
+    networks:
+      - commerce-network
+
+  payment-redis:
+    image: redis:7
+    container_name: payment-redis
+    restart: always
+    ports:
+      - "6385:6379"
+    networks:
+      - commerce-network
+
+  shipping-postgres:
+    image: postgres:17
+    container_name: shipping-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: shipping_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5438:5432"
+    volumes:
+      - shipping-postgres-data:/var/lib/postgresql/data
+    networks:
+      - commerce-network
+
+  notification-postgres:
+    image: postgres:17
+    container_name: notification-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5439:5432"
+    volumes:
+      - notification-postgres-data:/var/lib/postgresql/data
+    networks:
+      - commerce-network
+
+  review-postgres:
+    image: postgres:17
+    container_name: review-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: review_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5440:5432"
+    volumes:
+      - review-postgres-data:/var/lib/postgresql/data
+    networks:
+      - commerce-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - commerce-network
+
+volumes:
+  catalog-postgres-data:
+  inventory-postgres-data:
+  pricing-postgres-data:
+  wishlist-postgres-data:
+  order-postgres-data:
+  payment-postgres-data:
+  shipping-postgres-data:
+  notification-postgres-data:
+  review-postgres-data:
+  elasticsearch-data:
+
+networks:
+  commerce-network:
+    driver: bridge

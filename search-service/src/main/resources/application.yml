@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: search-service
+
+  profiles:
+    active: dev
+
+  elasticsearch:
+    uris: http://localhost:9200
+    username: elastic
+    password: changeme
+
+server:
+  port: 8094
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    root: INFO

@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: analytics-service
+
+  profiles:
+    active: dev
+
+server:
+  port: 8095
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    root: INFO

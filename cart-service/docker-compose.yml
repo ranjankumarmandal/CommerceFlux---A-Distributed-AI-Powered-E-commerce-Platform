@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+
+  redis:
+    image: redis:7
+    container_name: cart-redis
+    restart: always
+    ports:
+      - "6382:6379"
+    networks:
+      - commerce-network
+
+networks:
+  commerce-network:
